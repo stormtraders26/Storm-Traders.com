@@ -11,7 +11,6 @@ type Variant = {
   id: string;
   title: string;
   availableForSale: boolean;
-
   selectedOptions: SelectedOption[];
   price: {
     amount: string;
@@ -23,12 +22,31 @@ type Variant = {
   } | null;
 };
 
+type CartItem = {
+  name: string;
+  category: string;
+  price: number;
+  image: string;
+  handle: string;
+  variantId: string;
+  availableForSale: boolean;
+  quantity: number;
+};
+
 type VariantSelectorProps = {
   variants: Variant[];
+  productName: string;
+  productHandle: string;
+  productCategory: string;
+  fallbackImage?: string;
 };
 
 export default function VariantSelector({
   variants,
+  productName,
+  productHandle,
+  productCategory,
+  fallbackImage = "",
 }: VariantSelectorProps) {
   const firstAvailableVariant =
     variants.find((variant) => variant.availableForSale) || variants[0];
@@ -36,6 +54,8 @@ export default function VariantSelector({
   const [selectedVariantId, setSelectedVariantId] = useState(
     firstAvailableVariant?.id || ""
   );
+
+  const [message, setMessage] = useState("");
 
   const selectedVariant = useMemo(
     () =>
@@ -67,6 +87,53 @@ export default function VariantSelector({
     return variant.title;
   }
 
+  function addSelectedVariantToCart() {
+    if (!selectedVariant.availableForSale) return;
+
+    try {
+      const variantName = getVariantName(selectedVariant);
+
+      const newItem: CartItem = {
+        name: `${productName} - ${variantName}`,
+        category: productCategory,
+        price: Math.round(Number(selectedVariant.price.amount) * 100),
+        image: selectedVariant.image?.url || fallbackImage,
+        handle: productHandle,
+        variantId: selectedVariant.id,
+        availableForSale: selectedVariant.availableForSale,
+        quantity: 1,
+      };
+
+      const savedCart = localStorage.getItem("storm-traders-cart");
+
+      const currentCart: CartItem[] = savedCart
+        ? JSON.parse(savedCart)
+        : [];
+
+      const existingItem = currentCart.find(
+        (item) => item.variantId === selectedVariant.id
+      );
+
+      const updatedCart = existingItem
+        ? currentCart.map((item) =>
+            item.variantId === selectedVariant.id
+              ? { ...item, quantity: item.quantity + 1 }
+              : item
+          )
+        : [...currentCart, newItem];
+
+      localStorage.setItem(
+        "storm-traders-cart",
+        JSON.stringify(updatedCart)
+      );
+
+      setMessage(`${variantName} added to cart.`);
+    } catch (error) {
+      console.error("Unable to add item to cart:", error);
+      setMessage("Unable to add item. Please try again.");
+    }
+  }
+
   return (
     <div className="mt-6">
       <label
@@ -79,7 +146,10 @@ export default function VariantSelector({
       <select
         id="variant"
         value={selectedVariant.id}
-        onChange={(event) => setSelectedVariantId(event.target.value)}
+        onChange={(event) => {
+          setSelectedVariantId(event.target.value);
+          setMessage("");
+        }}
         className="w-full max-w-md rounded-lg border border-slate-600 bg-slate-900 px-4 py-3 text-white"
       >
         {variants.map((variant) => (
@@ -116,18 +186,34 @@ export default function VariantSelector({
             : "text-red-400"
         }`}
       >
- {selectedVariant.availableForSale ? "In Stock" : "Out of Stock"}
-</p>      
+        {selectedVariant.availableForSale
+          ? "In Stock"
+          : "Out of Stock"}
+      </p>
+
       <button
         type="button"
         disabled={!selectedVariant.availableForSale}
-        data-variant-id={selectedVariant.id}
+        onClick={addSelectedVariantToCart}
         className="mt-8 w-full max-w-md rounded-lg bg-blue-600 px-6 py-3 font-bold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-600"
       >
         {selectedVariant.availableForSale
           ? `Add ${getVariantName(selectedVariant)} to Cart`
           : "Out of Stock"}
       </button>
+
+      {message && (
+        <div className="mt-4 max-w-md rounded-lg bg-green-600 px-4 py-3 font-bold text-white">
+          {message}
+
+          <a
+            href="/shop"
+            className="ml-2 underline hover:text-yellow-200"
+          >
+            View Cart
+          </a>
+        </div>
+      )}
     </div>
   );
 }

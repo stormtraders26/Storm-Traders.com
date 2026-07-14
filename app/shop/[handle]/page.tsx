@@ -152,7 +152,13 @@ export default async function ProductDetailPage({
             </p>
           )}
 
-          <VariantSelector variants={variants} />
+ <VariantSelector
+  variants={variants}
+  productName={product.title}
+  productHandle={product.handle}
+  productCategory={product.productType || "Accessories"}
+  fallbackImage={product.featuredImage?.url || ""}
+/>
         </div>
       </div>
     </main>
