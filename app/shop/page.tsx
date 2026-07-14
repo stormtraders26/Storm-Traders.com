@@ -23,6 +23,7 @@ export default function ShopPage() {
   const [filter, setFilter] = useState<"all" | "instock" | "outofstock">("all");
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
+  const [discountCode, setDiscountCode] = useState("");
 
 useEffect(() => {
   async function loadProducts() {
@@ -270,7 +271,7 @@ useEffect(() => {
             ))}
           </div>
 
-          <div className="sticky top-24 h-fit rounded-xl bg-white p-6 text-slate-900 shadow">
+<div className="order-first h-fit rounded-xl bg-white p-6 text-slate-900 shadow lg:order-last lg:sticky lg:top-24">
             <h2 className="mb-4 text-2xl font-bold">Cart</h2>
 
             {cart.length === 0 ? (
@@ -328,6 +329,20 @@ useEffect(() => {
     placeholder="Leave a note for Storm Traders..."
     className="w-full rounded border p-2 text-sm"
     rows={4}
+  />
+</div>
+
+<div className="mt-4">
+  <label className="mb-2 block text-sm font-bold">
+    Discount Code
+  </label>
+
+  <input
+    type="text"
+    value={discountCode}
+    onChange={(e) => setDiscountCode(e.target.value)}
+    placeholder="Enter discount code"
+    className="w-full rounded border p-2 text-sm uppercase"
   />
 </div>
 

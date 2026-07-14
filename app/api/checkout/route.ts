@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   try {
-   const { items, note } = await request.json();
-   console.log("ORDER NOTE:", note);
+ const { items, note, discountCode } = await request.json();
+
 
     const query = `
       mutation cartCreate($input: CartInput!) {
@@ -36,10 +36,11 @@ export async function POST(request: Request) {
         body: JSON.stringify({
           query,
           variables: {
-  input: {
-    lines,
-    note,
-  },
+input: {
+  lines,
+  note,
+  discountCodes: discountCode ? [discountCode] : [],
+}
 },
         }),
       }

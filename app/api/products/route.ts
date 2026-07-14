@@ -4,7 +4,7 @@ export async function GET() {
   try {
     const query = `
       {
-        products(first: 20) {
+        products(first: 200) {
           edges {
             node {
               id

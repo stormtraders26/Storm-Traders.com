@@ -1,5 +1,11 @@
+"use client";
+
+import { useState } from "react";
+
 export default function StormTradersWebsite() {
-const products = [
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const products = [
   {
     name: "Pokémon Booster Packs",
     image: "/images/pokemon-booster-pack.jpg",
@@ -64,7 +70,7 @@ const products = [
     <nav className="hidden gap-8 text-sm text-slate-300 md:flex">
   <a href="#products" className="hover:text-yellow-300">Products</a>
   <a href="#locations" className="hover:text-yellow-300">Locations</a>
-  <a href="#host" className="hover:text-yellow-300">Host a Machine</a>
+  <a href="#hosts" className="hover:text-yellow-300">Host a Machine</a>
   <a href="/shop" className="hover:text-yellow-300">Shop Accessories</a>
   <a href="#contact" className="hover:text-yellow-300">Contact</a>
 </nav>
@@ -96,7 +102,7 @@ const products = [
 
             <div className="flex gap-4">
   <a
-    href="#host"
+    href="#hosts"
     className="rounded-xl bg-yellow-400 px-6 py-3 font-bold text-slate-950"
   >
     Host a Machine
