@@ -11,7 +11,7 @@ type Variant = {
   id: string;
   title: string;
   availableForSale: boolean;
-  quantityAvailable?: number | null;
+
   selectedOptions: SelectedOption[];
   price: {
     amount: string;
@@ -116,13 +116,8 @@ export default function VariantSelector({
             : "text-red-400"
         }`}
       >
-        {selectedVariant.availableForSale
-          ? selectedVariant.quantityAvailable != null
-            ? `${selectedVariant.quantityAvailable} In Stock`
-            : "In Stock"
-          : "Out of Stock"}
-      </p>
-
+ {selectedVariant.availableForSale ? "In Stock" : "Out of Stock"}
+</p>      
       <button
         type="button"
         disabled={!selectedVariant.availableForSale}

@@ -38,7 +38,6 @@ async function getProduct(handle: string) {
               id
               title
               availableForSale
-              quantityAvailable
 
               selectedOptions {
                 name
