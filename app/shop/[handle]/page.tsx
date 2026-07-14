@@ -1,5 +1,6 @@
 import BackButton from "./BackButton";
 import ImageGallery from "./ImageGallery";
+import VariantSelector from "./VariantSelector";
 
 type PageProps = {
   params: Promise<{
@@ -16,23 +17,42 @@ async function getProduct(handle: string) {
         handle
         description
         productType
+
         featuredImage {
           url
+          altText
         }
-          images(first: 10) {
-  edges {
-    node {
-      url
-    }
-  }
-}
-        variants(first: 1) {
+
+        images(first: 20) {
+          edges {
+            node {
+              url
+              altText
+            }
+          }
+        }
+
+        variants(first: 100) {
           edges {
             node {
               id
+              title
               availableForSale
+              quantityAvailable
+
+              selectedOptions {
+                name
+                value
+              }
+
               price {
                 amount
+                currencyCode
+              }
+
+              image {
+                url
+                altText
               }
             }
           }
@@ -58,68 +78,84 @@ async function getProduct(handle: string) {
     }
   );
 
-  const data = await response.json();
-  return data.data?.product;
+  if (!response.ok) {
+    throw new Error(
+      `Shopify request failed with status ${response.status}`
+    );
+  }
+
+  const result = await response.json();
+
+  if (result.errors) {
+    console.error("Shopify GraphQL errors:", result.errors);
+    throw new Error(result.errors[0]?.message || "Shopify API error");
+  }
+
+  return result.data?.product;
 }
 
-export default async function ProductDetailPage({ params }: PageProps) {
+export default async function ProductDetailPage({
+  params,
+}: PageProps) {
   const { handle } = await params;
   const product = await getProduct(handle);
 
- if (!product) {
+  if (!product) {
+    return (
+      <main className="min-h-screen bg-slate-950 p-10 text-white">
+        <BackButton />
+
+        <h1 className="mt-10 text-4xl font-bold">
+          Product not found
+        </h1>
+      </main>
+    );
+  }
+
+  const variants = product.variants.edges.map(
+    (edge: any) => edge.node
+  );
+
+  const galleryImages =
+    product.images?.edges
+      ?.map((edge: any) => edge.node.url)
+      .filter(Boolean) || [];
+
+  if (
+    galleryImages.length === 0 &&
+    product.featuredImage?.url
+  ) {
+    galleryImages.push(product.featuredImage.url);
+  }
+
   return (
     <main className="min-h-screen bg-slate-950 p-10 text-white">
       <BackButton />
-      <h1 className="mt-10 text-4xl font-bold">Product not found</h1>
-    </main>
-  );
-}
 
-  const variant = product.variants.edges[0].node;
-  const price = Number(variant.price.amount);
+      <div className="mt-10 grid gap-10 md:grid-cols-2">
+        <ImageGallery
+          title={product.title}
+          images={galleryImages}
+        />
 
-  return (
-<main className="min-h-screen bg-slate-950 p-10 text-white">
-  <BackButton />
+        <div>
+          <h1 className="text-5xl font-bold">
+            {product.title}
+          </h1>
 
-<div className="mt-10 grid gap-10 md:grid-cols-2">
-  <ImageGallery
-    title={product.title}
-    images={
-      product.images?.edges?.map((image: any) => image.node.url) ||
-      [product.featuredImage?.url]
-    }
-  />
+          <p className="mt-6 text-slate-300">
+            Category: {product.productType || "Accessories"}
+          </p>
 
-  <div>
-    <h1 className="text-5xl font-bold">{product.title}</h1>
+          {product.description && (
+            <p className="mt-6 max-w-xl text-slate-300">
+              {product.description}
+            </p>
+          )}
 
-    <p className="mt-4 text-2xl font-bold text-yellow-300">
-      ${price.toFixed(2)}
-    </p>
-
-    <p className="mt-4 font-bold">
-      {variant.availableForSale ? "In Stock" : "Out of Stock"}
-    </p>
-
-    <p className="mt-6 text-slate-300">
-      Category: {product.productType || "Accessories"}
-    </p>
-
-    {product.description && (
-      <p className="mt-6 max-w-xl text-slate-300">
-        {product.description}
-      </p>
-    )}
-
-   <a
-  href="/shop"
-  className="mt-8 inline-block rounded bg-blue-600 px-6 py-3 font-bold text-white hover:bg-blue-700"
->
-  Add from Shop Page
-</a>
-  </div>
-</div>
+          <VariantSelector variants={variants} />
+        </div>
+      </div>
     </main>
   );
 }
