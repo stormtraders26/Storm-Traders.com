@@ -18,6 +18,7 @@ type CartItem = Product & {
 
 export default function ShopPage() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [cartLoaded, setCartLoaded] = useState(false);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [orderNote, setOrderNote] = useState("");
   const [filter, setFilter] = useState<"all" | "instock" | "outofstock">("all");
@@ -66,7 +67,25 @@ useEffect(() => {
     window.removeEventListener("focus", loadProducts);
   };
 }, []);
+useEffect(() => {
+  try {
+    const savedCart = localStorage.getItem("storm-traders-cart");
 
+    if (savedCart) {
+      setCart(JSON.parse(savedCart));
+    }
+  } catch (error) {
+    console.error("Could not load cart:", error);
+  } finally {
+    setCartLoaded(true);
+  }
+}, []);
+
+useEffect(() => {
+  if (!cartLoaded) return;
+
+  localStorage.setItem("storm-traders-cart", JSON.stringify(cart));
+}, [cart, cartLoaded]);
   const categories = [
     "all",
     ...Array.from(
