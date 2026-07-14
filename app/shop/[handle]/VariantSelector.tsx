@@ -127,7 +127,7 @@ export default function VariantSelector({
         JSON.stringify(updatedCart)
       );
 
-      setMessage(`${variantName} added to cart.`);
+   window.location.href = "/shop";
     } catch (error) {
       console.error("Unable to add item to cart:", error);
       setMessage("Unable to add item. Please try again.");
